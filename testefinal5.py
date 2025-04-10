@@ -89,7 +89,6 @@ def click_search_icon(driver):
         search_container = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, path))
         )
-        print(search_container)
         
         if search_container: 
             search_container.click()
@@ -194,10 +193,11 @@ def collect_likers(driver, max_scrolls=10):
     scroll_top = 0
     like_list = set()
     error_count = 0
+    scroll_count = 0
     
-    for scroll_count in range(max_scrolls):
+    while scroll_count < max_scrolls:
         # Acha titulo com "Curtidas"
-        if error_count > 5:
+        if error_count > 3:
             print("Erro ao coletar curtidores.")
             break
         
@@ -212,10 +212,9 @@ def collect_likers(driver, max_scrolls=10):
         except TimeoutException:
             print("Erro: 'Curtidas' não encontrado.")
             open_likers_list(driver)
-            scroll_count = 0
-            like_list.clear()
-            scroll_top = 0
             error_count += 1
+            scroll_count = 0
+            scroll_top = 0
             time.sleep(1)
             continue
             
@@ -230,8 +229,10 @@ def collect_likers(driver, max_scrolls=10):
             
             time.sleep(1)
         except Exception as e:
-            print(e)
+            print("Erro", e)
             break
+        
+        scroll_count += 1
         
     return like_list
 
@@ -301,8 +302,6 @@ elements = WebDriverWait(driver, 10).until(
     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "main > div > div:nth-child(3) a"))
 ) 
 
-print(elements)
-
 for index in range(len(elements)):
     time.sleep(1)
     print(f"Clicando no post {index + 1} de {len(elements)}")
@@ -320,6 +319,7 @@ for index in range(len(elements)):
     time.sleep(2)
     likers = collect_likers(driver, max_scrolls=5)
     print(f"\nUsuários que curtiram coletados: {likers}")
+    print(f"Total de curtidores coletados: {len(likers)}")
     time.sleep(1)
 
     collect_comments(driver)
